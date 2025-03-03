@@ -3,10 +3,10 @@ import json
 import csv
 from datetime import datetime
 
-# Set the directory to scan (default: C drive)
+
 SCAN_DIRECTORY = "C:\\"  # Change this if needed
 
-# Function to get file details
+
 def get_file_info(file_path):
     try:
         file_stats = os.stat(file_path)
@@ -21,7 +21,6 @@ def get_file_info(file_path):
     except Exception as e:
         return {"File Name": file_path, "Error": str(e)}
 
-# Function to scan directories recursively
 def scan_directory(directory):
     file_list = []
     for root, dirs, files in os.walk(directory):
@@ -31,7 +30,6 @@ def scan_directory(directory):
                 file_list.append(get_file_info(file_path))
     return file_list
 
-# Function to save results in JSON
 def save_as_json(data, filename="scan_report.json"):
     try:
         with open(filename, "w", encoding="utf-8") as json_file:
@@ -40,7 +38,6 @@ def save_as_json(data, filename="scan_report.json"):
     except Exception as e:
         print(f"Failed to save JSON report: {e}")
 
-# Function to save results in CSV
 def save_as_csv(data, filename="scan_report.csv"):
     try:
         keys = data[0].keys() if data else ["File Name", "Path", "Size (KB)", "Created On", "Modified On", "Type"]
@@ -52,16 +49,12 @@ def save_as_csv(data, filename="scan_report.csv"):
     except Exception as e:
         print(f"Failed to save CSV report: {e}")
 
-# Main function
 if __name__ == "__main__":
     if not os.path.exists(SCAN_DIRECTORY):
         print(f"The directory {SCAN_DIRECTORY} does not exist.")
     else:
         print(f"Scanning {SCAN_DIRECTORY} ...")
         scanned_data = scan_directory(SCAN_DIRECTORY)
-
-        # Save reports
         save_as_json(scanned_data)
         save_as_csv(scanned_data)
-
         print("Scan completed! Check the reports for details.")
