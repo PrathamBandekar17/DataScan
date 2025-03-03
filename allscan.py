@@ -6,10 +6,10 @@ import subprocess
 import psutil
 from datetime import datetime, timedelta
 
-# Set the directory to scan (default: C drive)
+
 SCAN_DIRECTORY = "C:\\"  # Change if needed
 
-# Function to get file details
+# File details
 def get_file_info(file_path):
     try:
         file_stats = os.stat(file_path)
@@ -24,7 +24,7 @@ def get_file_info(file_path):
     except Exception as e:
         return {"File Name": file_path, "Error": str(e)}
 
-# Function to scan directories recursively
+#  scan directories
 def scan_directory(directory):
     file_list = []
     for root, dirs, files in os.walk(directory):
@@ -33,7 +33,7 @@ def scan_directory(directory):
             file_list.append(get_file_info(file_path))
     return file_list
 
-# Function to save results in JSON
+# save results in JSON
 def save_as_json(data, filename="combined_report.json"):
     try:
         with open(filename, "w", encoding="utf-8") as json_file:
@@ -42,7 +42,7 @@ def save_as_json(data, filename="combined_report.json"):
     except Exception as e:
         print(f"Failed to save JSON report: {e}")
 
-# Function to save results in CSV
+#  save results in CSV
 def save_as_csv(data, filename="combined_report.csv"):
     try:
         keys = data[0].keys() if data else ["File Name", "Path", "Size (KB)", "Created On", "Modified On", "Type"]
@@ -54,7 +54,7 @@ def save_as_csv(data, filename="combined_report.csv"):
     except Exception as e:
         print(f"Failed to save CSV report: {e}")
 
-# Function to get last password change date (Windows)
+# last password change date (Windows)
 def get_last_password_change_windows():
     try:
         command = 'powershell "(Get-LocalUser -Name $env:UserName).PasswordLastSet"'
@@ -63,17 +63,17 @@ def get_last_password_change_windows():
         if not output:
             return "Password change date not found"
 
-        # Adjust the format string to match the actual format of the date returned by the PowerShell command
+        # Adjust the format string 
         last_changed_date = datetime.strptime(output, "%d %B %Y %I:%M:%S %p")
         return last_changed_date
     except Exception as e:
         return str(e)
 
-# Function to check if password was changed in the last 6 months
+#  if password was changed in the last 6 months
 def check_password_age():
     last_changed = get_last_password_change_windows()
 
-    if isinstance(last_changed, str):  # If error occurs, return message
+    if isinstance(last_changed, str):  
         return last_changed
 
     six_months_ago = datetime.now() - timedelta(days=180)
@@ -83,7 +83,7 @@ def check_password_age():
     else:
         return f"Password NOT changed in the last 6 months! (Last changed: {last_changed})"
 
-# Function to check if Windows Hello PIN is enabled
+#  check if Windows Hello PIN is enabled
 def is_pin_enabled():
     try:
         command = 'powershell "Get-LocalUser -Name $env:UserName | Select-Object PasswordRequired"'
@@ -96,7 +96,7 @@ def is_pin_enabled():
     except Exception as e:
         return str(e)
 
-# Function to get hard disk information
+#  get hard disk information
 def get_disk_info():
     disk_info = []
     partitions = psutil.disk_partitions()
@@ -116,7 +116,7 @@ def get_disk_info():
 
     return disk_info
 
-# Function to get complete system information
+# get complete system information
 def get_system_info():
     return {
         "OS": platform.system(),
@@ -130,7 +130,7 @@ def get_system_info():
         "Disk Information": get_disk_info()
     }
 
-# Function to flatten system information for CSV
+# flatten system information for CSV
 def flatten_system_info(system_info):
     flattened_info = []
     for key, value in system_info.items():
@@ -142,26 +142,16 @@ def flatten_system_info(system_info):
     return flattened_info
 
 # Main function
-if __name__ == "__main__":
-    # Step 1: Scan files in C drive
+if __name__ == "__main__": 
     print(f"Scanning {SCAN_DIRECTORY} ...")
     scanned_data = scan_directory(SCAN_DIRECTORY)
-
-    # Step 2: Get system info
     print("Gathering system information...")
     system_info = get_system_info()
-
-    # Step 3: Combine data
     combined_data = {
         "File Scan": scanned_data,
         "System Information": system_info
     }
-
-    # Step 4: Save combined reports
     save_as_json(combined_data, "combined_report.json")
-
-    # Flatten system info for CSV
     flattened_system_info = flatten_system_info(system_info)
     save_as_csv(scanned_data + flattened_system_info, "combined_report.csv")
-
     print("Scan completed! Check the reports for details.")
